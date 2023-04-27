@@ -1,0 +1,285 @@
+<TooltipMDIconButton@MDIconButton+MDTooltip>
+<DrawerClickableItem@MDNavigationDrawerItem>
+    focus_color: "#373d66"
+    text_color: "#c9eeef"
+    ripple_color: "#c5bdd2"
+    selected_color: "#0c6c4d"
+
+<DrawerLabelItem@MDNavigationDrawerItem>
+    text_color: "#4a4939"
+    icon_color: "#4a4939"
+    focus_behavior: False
+    selected_color: "#4a4939"
+    _no_ripple_effect: True
+
+<ClickableTextFieldRound>
+    size_hint_y: None
+    height: search.height
+
+    MDTextField:
+        id: search
+        hint_text: root.hint_text
+        text: root.text
+        mode: "round"
+
+    MDIconButton:
+        icon: "eye-off"
+        pos_hint: {"center_y": .5}
+        pos: search.width - self.width + dp(8), 0
+        theme_text_color: "Hint"
+
+
+<ContentNavigationDrawer>
+    MDNavigationDrawerMenu:
+        MDNavigationDrawerHeader:
+            title: "ToG"
+            title_color: "#4a4939"
+            text: "Together on Global"
+            source: 'libs/images/app.png'
+            spacing: "4dp"
+            padding: "12dp", 0, 0, "56dp"
+
+        DrawerClickableItem:
+            icon: "home-outline"
+            text_right_color: "#4a4939"
+            text: "Home"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "home"
+
+        MDNavigationDrawerDivider:
+
+        MDNavigationDrawerLabel:
+            text: "Help & Feedback"
+
+        DrawerClickableItem:
+            icon: "message-alert-outline"
+            text_right_color: "#4a4939"
+            text: "Send Feedback"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "feedback"
+
+        DrawerClickableItem:
+            icon: "help-circle-outline"
+            text: "Help"
+            on_press:
+                root.nav_drawer.set_state("close")
+                root.screen_manager.current = "help"
+
+        MDNavigationDrawerDivider:
+
+        MDNavigationDrawerLabel:
+            text: "Labels"
+
+        DrawerLabelItem:
+            icon: "information-outline"
+            text: "Label"
+
+        DrawerLabelItem:
+            icon: "information-outline"
+            text: "Version 1.0.1"
+
+MDScreen:
+    MDFloatLayout:
+        MDTopAppBar:
+            pos_hint: {"top": 1}
+            elevation: 4
+            title: 'ToG'
+            left_action_items: [['menu', lambda x: nav_drawer.set_state("open")]]
+
+    MDNavigationLayout:
+
+        MDScreenManager:
+            id: screen_manager
+
+            # home screen
+            MDScreen:
+                name: "home"
+
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    pos_hint: {'top': 0.9}
+
+                    FitImage:
+                        source: "libs/images/app.png"
+                        size_hint_x: .5
+                        pos_hint: {"center_x": .5, "center_y": .5}
+                           
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        spacing: "14dp"
+                        height: '390dp'
+                        # md_bg_color: 0,0,1,.61
+                        radius: 36, 36, 0, 0
+                        padding: [0,0,0,'55dp']
+
+                        MDLabel:
+                            text: 'Welcome'
+                            halign: 'center'
+                            height: dp(24)
+                            bold: True
+                            font_style: 'H6'
+
+                        MDLabel:
+                            text: 'Make Us See What Happening!'
+                            halign: 'center'
+                            height: dp(24)
+                            font_style: 'Caption'
+
+                        MDFillRoundFlatButton:
+                            text: "Join Now"
+                            padding: "10dp"
+                            text_color: "white"
+                            size_hint_x: .7
+                            md_bg_color: 0,0,1,.61
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                            on_release: app.set_info_dialog()
+
+                        MDFillRoundFlatButton:
+                            text: "Start Server"
+                            padding: "10dp"
+                            text_color: "white"
+                            size_hint_x: .7
+                            pos_hint: {"center_x": .5, "center_y": .5}
+                            on_release:  app.start_server()
+
+                        MDFillRoundFlatButton:
+                            text: "MDRoundFlatButton"
+                            padding: "10dp"
+                            text_color: "white"
+                            size_hint_x: .7
+                            pos_hint: {"center_x": .5, "center_y": .5}
+
+                        MDBottomAppBar:
+                            MDTopAppBar:
+                                icon: 'cast'
+                                icon_color: 0, 0, 1, .61
+                                elevation: 0
+                                type: 'bottom'
+                                mode: 'center'
+                                size_hint_y: .6
+                                on_action_button: app.start_screen_share()
+                                
+            # feedback screen
+            MDScreen:
+                name: "feedback"
+
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    size_hint_y: None
+                    height: '390dp'
+                    padding: [30, 0, 30, 30]
+                    pos_hint: {"center_x": .5, "center_y": .5}
+                    
+                    MDIcon:
+                        icon: "android"
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+                    MDLabel:
+                        text: "We are constantly improving our product by lstening to your feedback."
+                        font_size: 13
+                       
+                    MDCard:
+                        orientation: 'vertical'
+                        size_hint_y: None
+                        spacing: "9dp"
+                        height: '270dp'
+                        padding: dp(30)
+                        elevation: 6
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+                        MDLabel:
+                            text: "Tell us how we can improve our product."
+                            font_size: 13
+                            halign: 'center'
+
+                        MDTextField:
+                            hint_text: "Email"
+                            line_color_focus: "green"
+                            font_size: 12
+
+                        MDTextField:
+                            hint_text: "Suggestion or Issue"
+                            line_color_focus: "green"
+                            multiline: True
+                            font_size: 12
+                        
+                        MDIconButton:
+                            id: send_feedback
+                            icon: "send-outline"
+                            theme_icon_color: "Custom"
+                            icon_color: 0, 1, 0, .7
+                            pos_hint: {"center_x": .8, "center_y": .5}
+                            on_release: app.show_toast()
+                         
+
+                MDBottomAppBar:
+                    MDTopAppBar:
+                        icon: 'home'
+                        icon_color: 0, 0, 1, .61
+                        mode: 'center'
+                        type: 'bottom'
+                        left_action_items: [[''], ['arrow-left']]
+                       
+
+            # help screen  
+            MDScreen:
+                name: "help"
+
+                MDBoxLayout:
+                    orientation: 'vertical'
+                    pos_hint: {'top': 0.9}
+                    padding: [10, 20, 0, 10]
+
+                    # MDLabel:
+                    #     text: "Get Help"
+                    #     bold: True
+                    #     font_size: 20
+
+                    ClickableTextFieldRound:
+                        size_hint_x: None
+                        width: "250dp"
+                        hint_text: "Search"
+                        pos_hint: {"center_x": .5, "center_y": .5}
+
+                    MDScrollView:
+                  
+                        MDList:
+                            TwoLineIconListItem:
+                                text: "How to connect to the server?"
+                                secondary_text: "Mobile"
+                            
+                            TwoLineIconListItem:
+                                text: "How to join the shares screen?"
+                                secondary_text: "Mobile"
+                            
+                            TwoLineIconListItem:
+                                text: "(050)-123-45-67"
+                                secondary_text: "Mobile"
+
+                            TwoLineIconListItem:
+                                text: "(050)-123-45-67"
+                                secondary_text: "Mobile"
+
+                MDBottomAppBar:
+                    MDTopAppBar:
+                        icon: 'home'
+                        icon_color: 0, 0, 1, .61
+                        type: 'bottom'
+                        mode: 'center'
+                        size_hint_y: .6
+                        left_action_items: [[''], ['arrow-left']]
+                   
+
+
+        MDNavigationDrawer:
+            id: nav_drawer
+            radius: (0, 16, 16, 0)
+
+            ContentNavigationDrawer:
+                screen_manager: screen_manager
+                nav_drawer: nav_drawer
+
+                
