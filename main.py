@@ -18,9 +18,9 @@ import socket
 
 # local address
 # local_host = socket.gethostbyname(socket.gethostname())
-local_host = '127.0.0.1'
+port = 65432
+local_host = '192.168.1.185'
 print(local_host)
-
 
 
 class ContentNavigationDrawer(MDScrollView):
@@ -35,10 +35,10 @@ class ClickableTextFieldRound(MDRelativeLayout):
 class ScreenShareApp(MDApp):
 
     # Server scripts
-    server = StreamingServer(local_host, 65432)
+    server = StreamingServer(local_host, port)
     
     # Client scripts
-    client = ScreenShareClient(local_host, 65432)
+    client = ScreenShareClient(local_host, port)
 
     dialog = None
 
@@ -112,10 +112,13 @@ class ScreenShareApp(MDApp):
     def start_server(self):
         server_thread = threading.Thread(target=self.server.start_server)
         server_thread.start()
+        print(f'Server start at {self.server}')
 
     def start_screen_share(self):
         client_thread = threading.Thread(target=self.client.start_stream)
         client_thread.start()
+        manager = ContentNavigationDrawer()
+   
 
     # stop screen sharing
     def stop_screen_sharing(self):
@@ -125,5 +128,9 @@ class ScreenShareApp(MDApp):
     def stop_server(self):
         self.server.stop_server()
 
+
+    def invite_friends(self):
+        # TODO craeting WhatsApp invitation mechanism
+        pass
 if __name__ == '__main__':
     ScreenShareApp().run()
