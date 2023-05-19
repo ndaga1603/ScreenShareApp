@@ -1,3 +1,170 @@
+################################ START USER SCREEN ####################################
+
+<UserType@MDCheckbox>:
+    group: "user_type"
+    size_hint: None, None
+    size: dp(48), dp(48)
+
+<LoginScreen>:
+    MDScreen:
+        MDCard:
+            orientation: "vertical"
+            size_hint: None, None
+            size: 300, 400
+            pos_hint: {"center_x": .5, "center_y": .5}
+            elevation: 8
+            padding: [30, 0, 30, 30]
+            spacing: 30
+            padding_y: 15
+
+            MDLabel:
+                text: "LOGIN"
+                font_style: "Button"
+                font_size: 34
+                halign: "center"
+                size_hint_y: None
+                height: self.texture_size[1]
+                
+            MDTextField:
+                id: username
+                mode: "rectangle"
+                hint_text: "Username"
+                icon_right: "account"
+                size_hint_x: None
+                width: 250
+                font_size: 20
+                pos_hint: {"center_x": .5}
+
+
+            MDTextField:
+                id: password
+                mode: "rectangle"
+                hint_text: "Password"
+                password: True
+                icon_right: "eye-off"
+                size_hint_x: None
+                width: 250
+                font_size: 20
+                pos_hint: {"center_x": .5}
+
+            MDRectangleFlatButton:
+                text: "Login"
+                pos_hint: {"center_x": .5}
+                font_size: 15
+                on_release: app.login()
+            
+            MDTextButton:
+                text: "I have't account, REGISTER"
+                pos_hint: {"center_x": .5}
+                font_size: 12
+                on_release: app.root.current = "register_screen"
+         
+
+<RegisterScreen>:
+    MDScreen:
+        MDCard:
+            orientation: "vertical"
+            size_hint: None, None
+            size: 300, 560
+            pos_hint: {"center_x": .5, "center_y": .5}
+            elevation: 8
+            padding: [30, 0, 30, 30]
+            spacing: 30
+            padding_y: 15
+
+            MDLabel:
+                text: "REGISTER"
+                font_style: "Button"
+                font_size: 34
+                halign: "center"
+                size_hint_y: None
+                height: self.texture_size[1]
+                
+            MDTextField:
+                id: username
+                mode: "rectangle"
+                hint_text: "Username"
+                icon_right: "account"
+                size_hint_x: None
+                width: 250
+                font_size: 20
+                pos_hint: {"center_x": .5}
+
+
+            MDTextField:
+                id: password1
+                mode: "rectangle"
+                hint_text: "Password"
+                password: True
+                icon_right: "eye-off"
+                size_hint_x: None
+                width: 250
+                font_size: 20
+                pos_hint: {"center_x": .5}
+
+            MDTextField:
+                id: password2
+                mode: "rectangle"
+                hint_text: "Confirm Password"
+                password: True
+                size_hint_x: None
+                width: 250
+                font_size: 20
+                pos_hint: {"center_x": .5}
+
+            BoxLayout:
+                orientation: "horizontal"
+                size_hint: None, None
+                size: 250, 48
+                pos_hint: {"center_x": .5}
+
+
+                UserType:
+                    id: user_type
+                    active: True
+                    value: "teacher"
+                    font_size: 16
+
+                MDLabel:
+                    text: "Teacher"
+                    size_hint_x: None
+                    width: 80
+                    font_size: 16
+                    halign: "left"
+                    valign: "center"
+                    
+                UserType:
+                    id: user_type
+                    value: "student"
+                    font_size: 16
+
+                MDLabel:
+                    text: "Student"
+                    size_hint_x: None
+                    width: 80
+                    font_size: 16
+                    halign: "left"
+                    valign: "center"
+
+
+            MDRectangleFlatButton:
+                text: "Register"
+                pos_hint: {"center_x": .5}
+                font_size: 15
+                on_release: app.register()
+            
+            MDTextButton:
+                text: "I have an account, LOGIN"
+                pos_hint: {"center_x": .5}
+                font_size: 12
+                on_release: app.root.current = "login_screen"
+
+############################ END USER SCREEN ####################################
+
+
+
+############################ START MAIN SCREEN ####################################
+
 <TooltipMDIconButton@MDIconButton+MDTooltip>
 <DrawerClickableItem@MDNavigationDrawerItem>
     focus_color: "#373d66"
@@ -24,7 +191,7 @@
         mode: "round"
 
     MDIconButton:
-        icon: "eye-off"
+        icon: "magnify"
         pos_hint: {"center_y": .5}
         pos: search.width - self.width + dp(8), 0
         theme_text_color: "Hint"
@@ -70,6 +237,15 @@
 
         MDNavigationDrawerDivider:
 
+        DrawerClickableItem:
+            icon: "logout"
+            text: "Logout"
+            on_press:
+                root.nav_drawer.set_state("close")
+                app.logout()
+
+        MDNavigationDrawerDivider:
+
         MDNavigationDrawerLabel:
             text: "Info"
 
@@ -81,6 +257,8 @@
             icon: "information-outline"
             text: "Version 1.0.1"
 
+
+       
 
 <HomeScreen@MDScreen>
     # home screen
@@ -101,7 +279,6 @@
             size_hint_y: None
             spacing: "14dp"
             height: '390dp'
-            # md_bg_color: 0,0,1,.61
             radius: 36, 36, 0, 0
             padding: [0,0,0,'55dp']
 
@@ -157,6 +334,7 @@
 <FeedbackScreen@MDScreen>
     # feedback screen
     name: "feedback"
+    
 
     MDBoxLayout:
         orientation: 'vertical'
@@ -213,7 +391,9 @@
             icon_color: 0, 0, 1, .61
             mode: 'center'
             type: 'bottom'
+            on_action_button: print("action button")
             left_action_items: [[''], ['arrow-left']]
+            
 
 <HelpScreen@MDScreen>
     # help screen  
@@ -297,7 +477,9 @@
             size_hint_y: .6
             left_action_items: [[''], ['arrow-left']] 
 
-MDScreen:
+<MainScreen@MDScreen>:
+    name: "main"
+
     MDFloatLayout:
         MDTopAppBar:
             pos_hint: {"top": 1}
@@ -318,10 +500,11 @@ MDScreen:
                                 
         MDNavigationDrawer:
             id: nav_drawer
-            radius: (0, 16, 16, 0)
+            radius: (0, 10, 10, 0)
 
             ContentNavigationDrawer:
                 screen_manager: screen_manager
                 nav_drawer: nav_drawer
 
-                
+
+####################################### END MAIN SCREENS #########################################

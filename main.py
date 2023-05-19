@@ -9,18 +9,14 @@ from kivymd.toast import toast
 from kivy.properties import ObjectProperty, StringProperty
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.scrollview import MDScrollView
+from kivy.uix.screenmanager import ScreenManager, Screen
 
 from vidstream import ScreenShareClient, StreamingServer
-from tkinter import * 
 import threading
 import socket
 
-
-# local address
-# local_host = socket.gethostbyname(socket.gethostname())
-port = 65432
-local_host = '192.168.1.185'
-print(local_host)
+# For Database Management
+from db import DatabaseManager as DBManager
 
 
 class ContentNavigationDrawer(MDScrollView):
@@ -31,24 +27,63 @@ class ClickableTextFieldRound(MDRelativeLayout):
     text = StringProperty()
     hint_text = StringProperty()
 
+class LoginScreen(Screen):
+    pass
 
-class ScreenShareApp(MDApp):
+class RegisterScreen(Screen):
+    pass
+
+class MainScreen(Screen):
+    pass
+
+class HomeScreen(Screen):
+    pass
+
+
+class FeedbackScreen(Screen):
+    pass
+
+
+class HelpScreen(Screen):
+    pass
+
+
+class RunningServerScreen(Screen):
+    pass
+
+class MainApp(MDApp):
+    # address address
+    # address = socket.gethostbyname(socket.gethostname())
+    port = 65432
+    address = '127.0.0.1'
 
     # Server scripts
-    server = StreamingServer(local_host, port)
+    server = StreamingServer(address, port)
     
     # Client scripts
-    client = ScreenShareClient(local_host, port)
+    client = ScreenShareClient(address, port)
 
     dialog = None
 
+
     def build(self):
         self.title = ""
-        self.icon = "language-python"
         Window.size = [320, 600]
         self.theme_cls.theme_style = 'Dark'
         self.theme_cls.primary_palette = 'DeepPurple'
-        return Builder.load_file('main.kv')
+
+        # Create a screen manager
+        screen_manager = ScreenManager()
+        screen_manager.add_widget(LoginScreen(name='login_screen'))
+        screen_manager.add_widget(RegisterScreen(name='register_screen'))
+        screen_manager.add_widget(MainScreen(name='main'))
+        screen_manager.add_widget(HomeScreen(name='home'))
+        screen_manager.add_widget(FeedbackScreen(name='feedback'))
+        screen_manager.add_widget(HelpScreen(name='help'))
+        screen_manager.add_widget(RunningServerScreen(name='server_running'))
+
+        return screen_manager
+  
 
     def set_info_dialog(self):
             if not self.dialog:
@@ -61,13 +96,11 @@ class ScreenShareApp(MDApp):
                             hint_text="Ip address of the target",
                             line_color_focus = "orange",
                             # hint_text_color_normal = "orange"
-
                         ),
                         MDTextField(
                             hint_text="Port of the target",
                             line_color_focus = "orange",
                             # hint_text_color_normal = "orange"
-
                         ),
                         orientation="vertical",
                         spacing="10dp",
@@ -86,19 +119,70 @@ class ScreenShareApp(MDApp):
                             theme_text_color="Custom",
                             text_color=self.theme_cls.primary_color,
                             on_release = self.join_screen,
-
                         ),
                     ],
                 )
             self.dialog.open()
 
+    def go_home(self):
+        self.root.current = 'main'
+     
+
+    def login(self):
+        username = self.root.get_screen('login_screen').ids.username.text
+        password = self.root.get_screen('login_screen').ids.password.text
+
+
+        if username == "" or password == "":
+            toast("Please fill all fields")
+        else:
+            dbManager = DBManager(password, username, user_type="")
+            ouput = dbManager.login()
+
+            if ouput:
+                toast("You have been logged in")
+                self.root.current = 'main'
+            
+            else:
+                toast("Invalid credentials")
+        
+    def register(self):
+        user_type = ""
+        username = self.root.get_screen('register_screen').ids.username.text
+        password = self.root.get_screen('register_screen').ids.password1.text
+        confirm_password = self.root.get_screen('register_screen').ids.password2.text
+        student_type = self.root.get_screen('register_screen').ids.user_type.active
+        if student_type:
+            user_type = "Student"
+        else:
+            user_type = "Teacher"
+   
+        if username == "" or password == "" or confirm_password == "":
+            toast("Please fill all fields")
+        else:
+            if password == confirm_password:
+                dbManager = DBManager(password, username, user_type)
+                input = dbManager.register()
+
+                if input:
+                    toast("You have been registered")
+                    self.root.current = 'login_screen'
+                
+                else:
+                    toast("User already exists")
+    
+            else:
+                toast("Passwords do not match")
+
+    def logout(self):
+        self.root.current = 'login_screen'
+        toast("You have been logged out")
 
     def cancel_dialog(self, obj):
         self.dialog.dismiss()
 
     def join_screen(self, obj):
-        pass
-        
+        pass 
     
     def hello(self):
         print("I'm Clicked Now")
@@ -107,7 +191,6 @@ class ScreenShareApp(MDApp):
         '''Displays a toast on the screen.'''
         text = "Thanks for your feedback!"
         toast(text)
-
 
     def start_server(self):
         server_thread = threading.Thread(target=self.server.start_server)
@@ -119,7 +202,6 @@ class ScreenShareApp(MDApp):
         client_thread.start()
         manager = ContentNavigationDrawer()
    
-
     # stop screen sharing
     def stop_screen_sharing(self):
         self.client.stop_stream()
@@ -133,4 +215,4 @@ class ScreenShareApp(MDApp):
         # TODO craeting WhatsApp invitation mechanism
         pass
 if __name__ == '__main__':
-    ScreenShareApp().run()
+    MainApp().run()
