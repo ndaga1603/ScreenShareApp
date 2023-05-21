@@ -10,6 +10,7 @@ from kivy.properties import ObjectProperty, StringProperty
 from kivymd.uix.relativelayout import MDRelativeLayout
 from kivymd.uix.scrollview import MDScrollView
 from kivy.uix.screenmanager import ScreenManager, Screen
+from kivymd.uix.responsivelayout import MDResponsiveLayout
 
 from vidstream import ScreenShareClient, StreamingServer
 import threading
@@ -36,20 +37,20 @@ class RegisterScreen(Screen):
 class MainScreen(Screen):
     pass
 
-class HomeScreen(Screen):
-    pass
+# class HomeScreen(Screen):
+#     pass
 
 
-class FeedbackScreen(Screen):
-    pass
+# class FeedbackScreen(Screen):
+#     pass
 
 
-class HelpScreen(Screen):
-    pass
+# class HelpScreen(Screen):
+#     pass
 
 
-class RunningServerScreen(Screen):
-    pass
+# class RunningServerScreen(Screen):
+#     pass
 
 class MainApp(MDApp):
     # address address
@@ -77,10 +78,10 @@ class MainApp(MDApp):
         screen_manager.add_widget(LoginScreen(name='login_screen'))
         screen_manager.add_widget(RegisterScreen(name='register_screen'))
         screen_manager.add_widget(MainScreen(name='main'))
-        screen_manager.add_widget(HomeScreen(name='home'))
-        screen_manager.add_widget(FeedbackScreen(name='feedback'))
-        screen_manager.add_widget(HelpScreen(name='help'))
-        screen_manager.add_widget(RunningServerScreen(name='server_running'))
+        # screen_manager.add_widget(HomeScreen(name='home'))
+        # screen_manager.add_widget(FeedbackScreen(name='feedback'))
+        # screen_manager.add_widget(HelpScreen(name='help'))
+        # screen_manager.add_widget(RunningServerScreen(name='server_running'))
 
         return screen_manager
   
@@ -124,10 +125,6 @@ class MainApp(MDApp):
                 )
             self.dialog.open()
 
-    def go_home(self):
-        self.root.current = 'main'
-     
-
     def login(self):
         username = self.root.get_screen('login_screen').ids.username.text
         password = self.root.get_screen('login_screen').ids.password.text
@@ -140,6 +137,7 @@ class MainApp(MDApp):
             ouput = dbManager.login()
 
             if ouput:
+               
                 toast("You have been logged in")
                 self.root.current = 'main'
             
@@ -165,6 +163,11 @@ class MainApp(MDApp):
                 input = dbManager.register()
 
                 if input:
+                    self.root.get_screen('register_screen').ids.username.text = ""
+                    self.root.get_screen('register_screen').ids.password1.text = ""
+                    self.root.get_screen('register_screen').ids.password2.text = ""
+                 
+
                     toast("You have been registered")
                     self.root.current = 'login_screen'
                 
@@ -176,16 +179,19 @@ class MainApp(MDApp):
 
     def logout(self):
         self.root.current = 'login_screen'
+        self.root.get_screen('login_screen').ids.username.text = ""
+        self.root.get_screen('login_screen').ids.password.text = ""
         toast("You have been logged out")
 
     def cancel_dialog(self, obj):
         self.dialog.dismiss()
 
     def join_screen(self, obj):
-        pass 
+        client_thread = threading.Thread(target=self.client.start_stream, args=("receive",))
+        client_thread.start()
+        self.dialog.dismiss()
+        toast("You have been connected to the server")
     
-    def hello(self):
-        print("I'm Clicked Now")
 
     def show_toast(self):
         '''Displays a toast on the screen.'''
@@ -195,12 +201,13 @@ class MainApp(MDApp):
     def start_server(self):
         server_thread = threading.Thread(target=self.server.start_server)
         server_thread.start()
-        print(f'Server start at {self.server}')
+        toast(f'Server start at {self.server}')
 
     def start_screen_share(self):
-        client_thread = threading.Thread(target=self.client.start_stream)
+        client_thread = threading.Thread(target=self.client.start_stream, args=("send",))
         client_thread.start()
-        manager = ContentNavigationDrawer()
+        toast(f'Starting screen share at {self.client}')
+        # manager = ContentNavigationDrawer()
    
     # stop screen sharing
     def stop_screen_sharing(self):
