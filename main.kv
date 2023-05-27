@@ -162,8 +162,24 @@
 ############################ END USER SCREEN ####################################
 
 
+############################ RUNNING SERVER SCREEN ###############################
 
-############################ START MAIN SCREEN ####################################
+                
+# <RunningServerScreen>:
+#     MDBoxLayout:
+#         orientation: "vertical"
+#         MDLabel:
+#             text: "RUNNING SERVER"
+#             font_style: "Button"
+#             font_size: 34
+#             halign: "center"
+#             size_hint_y: None
+#             height: self.texture_size[1]
+
+
+############################ END RUNNING SERVER SCREEN ###########################
+
+############################ START MAIN SCREEN ###################################
 
 <TooltipMDIconButton@MDIconButton+MDTooltip>
 <DrawerClickableItem@MDNavigationDrawerItem>
@@ -200,9 +216,9 @@
 <ContentNavigationDrawer>
     MDNavigationDrawerMenu:
         MDNavigationDrawerHeader:
-            title: "ToG"
+            title: "DMS"
             title_color: "#4a4939"
-            text: "Together on Global"
+            text: "Desktop Multicasting System"
             source: 'libs/images/app.png'
             spacing: "4dp"
             padding: "12dp", 0, 0, "56dp"
@@ -260,11 +276,12 @@
 
        
 
+
+
 <HomeScreen@MDScreen>
     # home screen
     name: "home"
    
-
     MDBoxLayout:
         orientation: 'vertical'
         pos_hint: {'top': 0.9}
@@ -440,42 +457,42 @@
           
 
 
-<RunningServerScreen@MDScreen>
-    # running server screen  
-    name: "server_running"
+# <RunningServerScreen@MDScreen>
+#     # running server screen  
+#     name: "server_running"
 
-    MDBoxLayout:
-        orientation: 'vertical'
-        pos_hint: {'top': 0.9}
-        padding: [10, 20, 0, 10]
+#     MDBoxLayout:
+#         orientation: 'vertical'
+#         pos_hint: {'top': 0.9}
+#         padding: [10, 20, 0, 10]
 
-        MDScrollView:
-            MDList:
-                TwoLineIconListItem:
-                    text: "How to connect to the server?"
-                    secondary_text: "Mobile"
+#         MDScrollView:
+#             MDList:
+#                 TwoLineIconListItem:
+#                     text: "How to connect to the server?"
+#                     secondary_text: "Mobile"
                 
-                TwoLineIconListItem:
-                    text: "How to join the shares screen?"
-                    secondary_text: "Mobile"
+#                 TwoLineIconListItem:
+#                     text: "How to join the shares screen?"
+#                     secondary_text: "Mobile"
                 
-                TwoLineIconListItem:
-                    text: "(050)-123-45-67"
-                    secondary_text: "Mobile"
+#                 TwoLineIconListItem:
+#                     text: "(050)-123-45-67"
+#                     secondary_text: "Mobile"
 
-                TwoLineIconListItem:
-                    text: "(050)-123-45-67"
-                    secondary_text: "Mobile"      
+#                 TwoLineIconListItem:
+#                     text: "(050)-123-45-67"
+#                     secondary_text: "Mobile"      
 
-    MDBottomAppBar:
-        MDTopAppBar:
-            icon: 'cast'
-            icon_color: 'red'
-            icon_color: 0, 0, 1, .61
-            type: 'bottom'
-            mode: 'center'
-            size_hint_y: .6
-            left_action_items: [[''], ['arrow-left']] 
+#     MDBottomAppBar:
+#         MDTopAppBar:
+#             icon: 'cast'
+#             icon_color: 'red'
+#             icon_color: 0, 0, 1, .61
+#             type: 'bottom'
+#             mode: 'center'
+#             size_hint_y: .6
+#             left_action_items: [[''], ['arrow-left']] 
 
 <MainScreen@MDScreen>:
     name: "main"
@@ -484,7 +501,7 @@
         MDTopAppBar:
             pos_hint: {"top": 1}
             elevation: 4
-            title: 'ToG'
+            title: 'DMS'
             left_action_items: [['menu', lambda x: nav_drawer.set_state("open")]]
 
     MDNavigationLayout:
@@ -496,7 +513,7 @@
             HomeScreen:
             FeedbackScreen:
             HelpScreen:
-            RunningServerScreen:
+            # RunningServerScreen:
                                 
         MDNavigationDrawer:
             id: nav_drawer
