@@ -176,6 +176,11 @@
 #             size_hint_y: None
 #             height: self.texture_size[1]
 
+#         MDRectangleFlatButton:
+#             text: "View Connected Clients"
+#             on_release: app.root.current = "connected_clients"
+
+
 
 ############################ END RUNNING SERVER SCREEN ###########################
 
@@ -274,10 +279,6 @@
             text: "Version 1.0.1"
 
 
-       
-
-
-
 <HomeScreen@MDScreen>
     # home screen
     name: "home"
@@ -285,12 +286,14 @@
     MDBoxLayout:
         orientation: 'vertical'
         pos_hint: {'top': 0.9}
-
+        
         FitImage:
             source: "libs/images/app.png"
             size_hint_x: .5
             pos_hint: {"center_x": .5, "center_y": .5}
-                
+            radius: [36,]
+            opacity: .5
+ 
         MDCard:
             orientation: 'vertical'
             size_hint_y: None
@@ -319,7 +322,7 @@
                 size_hint_x: .7
                 md_bg_color: 0,0,1,.61
                 pos_hint: {"center_x": .5, "center_y": .5}
-                on_release: app.set_info_dialog()
+                on_release: app.join_dialog()
 
             MDFillRoundFlatButton:
                 text: "Start Server"
@@ -327,7 +330,7 @@
                 text_color: "white"
                 size_hint_x: .7
                 pos_hint: {"center_x": .5, "center_y": .5}
-                on_release:  app.start_server()
+                on_release:  app.server_dialog()
 
             MDFillRoundFlatButton:
                 text: "Invite Friends"
@@ -339,6 +342,7 @@
 
             MDBottomAppBar:
                 MDTopAppBar:
+                    id: top_app_bar
                     icon: 'cast'
                     icon_color: 0, 0, 1, .61
                     elevation: 0
@@ -456,44 +460,6 @@
             left_action_items: [[''], ['arrow-left']]
           
 
-
-# <RunningServerScreen@MDScreen>
-#     # running server screen  
-#     name: "server_running"
-
-#     MDBoxLayout:
-#         orientation: 'vertical'
-#         pos_hint: {'top': 0.9}
-#         padding: [10, 20, 0, 10]
-
-#         MDScrollView:
-#             MDList:
-#                 TwoLineIconListItem:
-#                     text: "How to connect to the server?"
-#                     secondary_text: "Mobile"
-                
-#                 TwoLineIconListItem:
-#                     text: "How to join the shares screen?"
-#                     secondary_text: "Mobile"
-                
-#                 TwoLineIconListItem:
-#                     text: "(050)-123-45-67"
-#                     secondary_text: "Mobile"
-
-#                 TwoLineIconListItem:
-#                     text: "(050)-123-45-67"
-#                     secondary_text: "Mobile"      
-
-#     MDBottomAppBar:
-#         MDTopAppBar:
-#             icon: 'cast'
-#             icon_color: 'red'
-#             icon_color: 0, 0, 1, .61
-#             type: 'bottom'
-#             mode: 'center'
-#             size_hint_y: .6
-#             left_action_items: [[''], ['arrow-left']] 
-
 <MainScreen@MDScreen>:
     name: "main"
 
@@ -503,6 +469,7 @@
             elevation: 4
             title: 'DMS'
             left_action_items: [['menu', lambda x: nav_drawer.set_state("open")]]
+            right_action_items: [['stop', lambda x: app.stop_server(instance=None)], ['play', lambda x: app.go_to_connected_clients()]]
 
     MDNavigationLayout:
 
@@ -513,7 +480,7 @@
             HomeScreen:
             FeedbackScreen:
             HelpScreen:
-            # RunningServerScreen:
+      
                                 
         MDNavigationDrawer:
             id: nav_drawer
