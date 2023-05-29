@@ -1,3 +1,6 @@
+import os, sys
+from kivy.resources import resource_add_path, resource_find
+
 from kivymd.app import MDApp
 from kivy.core.window import Window
 from kivy.lang import Builder
@@ -24,23 +27,26 @@ from kivy.properties import BooleanProperty
 from vidstream import ScreenShareClient, StreamingServer
 import threading
 import socket
+import webbrowser
+import subprocess
+import urllib.parse
+
 
 # For Database Management
 from db import DatabaseManager as DBManager
+
 
 class ConnectedClientsScreen(Screen):
     def __init__(self, main_app, **kwargs):
         super(ConnectedClientsScreen, self).__init__(**kwargs)
         self.main_app = main_app
-        
 
-
-        anchor_layout = MDAnchorLayout(anchor_x='center', anchor_y='center')
+        anchor_layout = MDAnchorLayout(anchor_x="center", anchor_y="center")
         layout = MDBoxLayout(
-            orientation='vertical',
-            size_hint_y= None,
-            height= Window.size[1] - 100,
-            padding=(20, 20, 20, 20)
+            orientation="vertical",
+            size_hint_y=None,
+            height=Window.size[1] - 100,
+            padding=(20, 20, 20, 20),
         )
 
         label = MDLabel(
@@ -51,7 +57,7 @@ class ConnectedClientsScreen(Screen):
             size_hint_y=None,
             height=Window.size[1] - 550,
         )
-        
+
         self.data_table = MDDataTable(
             elevation=4,
             background_color_header="#65275d",
@@ -63,27 +69,71 @@ class ConnectedClientsScreen(Screen):
                 ("S/N", dp(20)),
                 ("Name", dp(30)),
                 ("IP Address", dp(30)),
-                ("Status", dp(30))
+                ("Status", dp(30)),
             ],
-      
             row_data=[
-                ("1", "Client 1", "192.168.0.1", ("checkbox-marked-circle",[39 / 256, 174 / 256, 96 / 256, 1], "Online",)),
-                ("2", "Client 1", "192.168.0.1", ("checkbox-marked-circle",[39 / 256, 174 / 256, 96 / 256, 1], "Online",)),
-                ("3", "Client 1", "192.168.0.1", ("checkbox-marked-circle",[39 / 256, 174 / 256, 96 / 256, 1], "Online",)),
-                ("4", "Client 1", "192.168.0.1", ("checkbox-marked-circle",[39 / 256, 174 / 256, 96 / 256, 1], "Online",)),
-                ("5", "Client 1", "192.168.0.1", ("checkbox-marked-circle",[39 / 256, 174 / 256, 96 / 256, 1], "Online",)),
-            ]
+                (
+                    "1",
+                    "Client 1",
+                    "192.168.0.1",
+                    (
+                        "checkbox-marked-circle",
+                        [39 / 256, 174 / 256, 96 / 256, 1],
+                        "Online",
+                    ),
+                ),
+                (
+                    "2",
+                    "Client 1",
+                    "192.168.0.1",
+                    (
+                        "checkbox-marked-circle",
+                        [39 / 256, 174 / 256, 96 / 256, 1],
+                        "Online",
+                    ),
+                ),
+                (
+                    "3",
+                    "Client 1",
+                    "192.168.0.1",
+                    (
+                        "checkbox-marked-circle",
+                        [39 / 256, 174 / 256, 96 / 256, 1],
+                        "Online",
+                    ),
+                ),
+                (
+                    "4",
+                    "Client 1",
+                    "192.168.0.1",
+                    (
+                        "checkbox-marked-circle",
+                        [39 / 256, 174 / 256, 96 / 256, 1],
+                        "Online",
+                    ),
+                ),
+                (
+                    "5",
+                    "Client 1",
+                    "192.168.0.1",
+                    (
+                        "checkbox-marked-circle",
+                        [39 / 256, 174 / 256, 96 / 256, 1],
+                        "Online",
+                    ),
+                ),
+            ],
         )
         stop_button = MDFloatingActionButton(
             icon="stop",
-            pos_hint={'center_x': 0.5},
-            md_bg_color= [205 / 256, 24 / 256, 24 / 256, 1], # Red
+            pos_hint={"center_x": 0.5},
+            md_bg_color=[205 / 256, 24 / 256, 24 / 256, 1],  # Red
             on_release=self.main_app.stop_server,
         )
 
         back_button = MDIconButton(
             icon="arrow-left",
-            pos_hint={'x': 0.05, 'top': 0.95},
+            pos_hint={"x": 0.05, "top": 0.95},
             on_release=self.main_app.back_home,
         )
 
@@ -97,7 +147,7 @@ class ConnectedClientsScreen(Screen):
         float_layout.add_widget(back_button)
 
         self.add_widget(float_layout)
-   
+
 
 class ContentNavigationDrawer(MDScrollView):
     screen_manager = ObjectProperty()
@@ -122,13 +172,13 @@ class MainScreen(Screen):
 
 
 class MainApp(MDApp):
-
     def __init__(self, **kwargs):
         """Initialize the app"""
         super(MainApp, self).__init__(**kwargs)
         self.server_running = False
         self.is_sharing = False
         self.port = 9999
+        self.address = None
         self.server = None
         self.client = None
         self.dialog = None
@@ -143,16 +193,16 @@ class MainApp(MDApp):
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "DeepPurple"
 
-
         # Create a screen manager
         self.screen_manager = ScreenManager()
         self.screen_manager.add_widget(LoginScreen(name="login_screen"))
         self.screen_manager.add_widget(RegisterScreen(name="register_screen"))
         self.screen_manager.add_widget(MainScreen(name="main"))
-        self.screen_manager.add_widget(ConnectedClientsScreen(main_app=self,name="connected_clients"))
+        self.screen_manager.add_widget(
+            ConnectedClientsScreen(main_app=self, name="connected_clients")
+        )
 
         return self.screen_manager
-
 
     def server_dialog(self):
         """Create a dialog for starting the server"""
@@ -183,10 +233,10 @@ class MainApp(MDApp):
                         text="Cancel",
                         theme_text_color="Custom",
                         text_color=self.theme_cls.primary_color,
-                        on_release=lambda x: self.cancel_dialog('obj', type='server'),
+                        on_release=lambda x: self.cancel_dialog("obj", type="server"),
                     ),
                     MDFlatButton(
-                        text="Ok",
+                        text="Start",
                         theme_text_color="Custom",
                         text_color=self.theme_cls.primary_color,
                         on_release=self.run_server,
@@ -195,10 +245,9 @@ class MainApp(MDApp):
             )
         self.dialog.open()
 
-
     def join_dialog(self):
         """Create a dialog box to join a server"""
-        
+
         if not self.client_dialog:
             self.client_dialog = MDDialog(
                 title="Connect To The Server",
@@ -225,10 +274,10 @@ class MainApp(MDApp):
                         text="Cancel",
                         theme_text_color="Custom",
                         text_color=self.theme_cls.primary_color,
-                        on_release=lambda x: self.cancel_dialog('obj', type='client'),
+                        on_release=lambda x: self.cancel_dialog("obj", type="client"),
                     ),
                     MDFlatButton(
-                        text="Ok",
+                        text="Connect",
                         theme_text_color="Custom",
                         text_color=self.theme_cls.primary_color,
                         on_release=self.join_screen,
@@ -307,7 +356,7 @@ class MainApp(MDApp):
                 toast("Passwords do not match")
 
     def logout(self):
-        """ Logs out the user and changes the screen to login screen."""
+        """Logs out the user and changes the screen to login screen."""
 
         self.root.current = "login_screen"
         self.user = None
@@ -323,7 +372,7 @@ class MainApp(MDApp):
             toast("You have been logged out")
 
     def cancel_dialog(self, obj, type):
-        """ Closes the dialog box.
+        """Closes the dialog box.
         Args:
         ----
             obj: The object of the button pressed.
@@ -334,10 +383,9 @@ class MainApp(MDApp):
         else:
             self.client_dialog.dismiss()
             self.client_dialog = None
-    
 
     def join_screen(self, obj):
-        """ Changes the screen to join screen.
+        """Changes the screen to join screen.
         Args:
         ----
             obj: The object of the button pressed.
@@ -370,15 +418,14 @@ class MainApp(MDApp):
         ----------
             text: The text to be displayed on the toast.
         """
-
         text = "Thanks for your feedback!"
-        
+
         toast(text)
 
     def back_home(self, instance):
         """Changes the screen to home screen."""
-        self.root.current = "main"  
-    
+        self.root.current = "main"
+
     def go_to_connected_clients(self):
         """Changes the screen to connected clients."""
         if self.user != None:
@@ -392,29 +439,28 @@ class MainApp(MDApp):
         Args:
         ----
             obj: The object of the button pressed.
-        Parameters: 
+        Parameters:
         ----------
             ip: The ip address of the target.
             port: The port of the target.
         """
         if self.user != None:
-            ip = self.dialog.content_cls.children[1].text
-            port = self.dialog.content_cls.children[0].text
-            if ip == "" or port == "":
+            self.address = self.dialog.content_cls.children[1].text
+            self.port = self.dialog.content_cls.children[0].text
+            if self.address == "" or self.port == "":
                 toast("Please fill all fields")
             else:
                 try:
-                    self.server = StreamingServer(str(ip), int(port))
+                    self.server = StreamingServer(str(self.address), int(self.port))
                     server_thread = threading.Thread(target=self.server.start_server)
                     server_thread.start()
-                    toast(f"Server start at {ip}:{port}")
+                    toast(f"Server start at {self.address}:{self.port}")
                     self.dialog.dismiss()
                     self.server_running = True
                     self.go_to_connected_clients()
                 except:
                     toast("Error! not able to start server")
-        
-  
+
     def start_screen_share(self):
         """Starts the screen sharing.
         Parameters:
@@ -435,14 +481,12 @@ class MainApp(MDApp):
                 toast(f"screen share Staring")
             except:
                 toast("Error! server not running")
-        
 
     def stop_screen_sharing(self):
         """Stops the screen sharing."""
         self.client.stop_stream()
         self.is_sharing = False
 
- 
     def stop_server(self, instance):
         """Stops the server."""
         if self.user != None:
@@ -456,9 +500,24 @@ class MainApp(MDApp):
 
     def invite_friends(self):
         """Invites friends to the meeting."""
-        # TODO craeting meeting invitation mechanism
-        pass
-        
+        if self.user != None and self.server_running:
+            message = f"Hello, we are having a meeting on ScreenShare. Please join us. Here is the link to join the meeting, Address: {self.address} Port: {self.port}"
+            encoded_text = urllib.parse(message)
+            try:
+                subprocess.Popen(
+                    ["cmd", "/C", f"start whatsapp://send?text={encoded_text}"],
+                    shell=True,
+                )
+            except FileNotFoundError:
+                url = f"https://web.whatsapp.com/send?text={encoded_text}"
+                webbrowser.open(url)
+
 
 if __name__ == "__main__":
-    MainApp().run()
+    try:
+        if hasattr(sys, "_MEIPASS"):
+            resource_add_path(os.path.join(sys._MEIPASS))
+        MainApp().run()
+    except Exception as e:
+        print(e)
+        input("Press enter.")
