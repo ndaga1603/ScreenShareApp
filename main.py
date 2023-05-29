@@ -127,16 +127,19 @@ class MainApp(MDApp):
         """Initialize the app"""
         super(MainApp, self).__init__(**kwargs)
         self.server_running = False
+        self.is_sharing = False
         self.port = 9999
         self.server = None
+        self.client = None
         self.dialog = None
+        self.client_dialog = None
         self.user = None
 
     def build(self):
         """Build the app"""
 
         self.title = ""
-        Window.size = [320, 600]
+        Window.size = [640, 630]
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "DeepPurple"
 
@@ -147,7 +150,6 @@ class MainApp(MDApp):
         self.screen_manager.add_widget(RegisterScreen(name="register_screen"))
         self.screen_manager.add_widget(MainScreen(name="main"))
         self.screen_manager.add_widget(ConnectedClientsScreen(main_app=self,name="connected_clients"))
-
 
         return self.screen_manager
 
@@ -181,7 +183,7 @@ class MainApp(MDApp):
                         text="Cancel",
                         theme_text_color="Custom",
                         text_color=self.theme_cls.primary_color,
-                        on_release=self.cancel_dialog,
+                        on_release=lambda x: self.cancel_dialog('obj', type='server'),
                     ),
                     MDFlatButton(
                         text="Ok",
@@ -197,8 +199,8 @@ class MainApp(MDApp):
     def join_dialog(self):
         """Create a dialog box to join a server"""
         
-        if not self.dialog:
-            self.dialog = MDDialog(
+        if not self.client_dialog:
+            self.client_dialog = MDDialog(
                 title="Connect To The Server",
                 radius=[20, 7, 20, 7],
                 type="custom",
@@ -223,7 +225,7 @@ class MainApp(MDApp):
                         text="Cancel",
                         theme_text_color="Custom",
                         text_color=self.theme_cls.primary_color,
-                        on_release=self.cancel_dialog,
+                        on_release=lambda x: self.cancel_dialog('obj', type='client'),
                     ),
                     MDFlatButton(
                         text="Ok",
@@ -233,7 +235,7 @@ class MainApp(MDApp):
                     ),
                 ],
             )
-        self.dialog.open()
+        self.client_dialog.open()
 
     def login(self):
         """Login a user
@@ -309,19 +311,30 @@ class MainApp(MDApp):
 
         self.root.current = "login_screen"
         self.user = None
-        self.root.get_screen("login_screen").ids.username.text = ""
-        self.root.get_screen("login_screen").ids.password.text = ""
-        toast("You have been logged out")
+        if self.server_running or self.is_sharing:
+            self.stop_server(instance=None)
+            self.stop_screen_sharing()
+            self.root.get_screen("login_screen").ids.username.text = ""
+            self.root.get_screen("login_screen").ids.password.text = ""
+            toast("You have been logged out")
+        else:
+            self.root.get_screen("login_screen").ids.username.text = ""
+            self.root.get_screen("login_screen").ids.password.text = ""
+            toast("You have been logged out")
 
-    def cancel_dialog(self, obj):
+    def cancel_dialog(self, obj, type):
         """ Closes the dialog box.
         Args:
         ----
             obj: The object of the button pressed.
         """
-
-        self.dialog.dismiss()
-        self.dialog = None
+        if type == "server":
+            self.dialog.dismiss()
+            self.dialog = None
+        else:
+            self.client_dialog.dismiss()
+            self.client_dialog = None
+    
 
     def join_screen(self, obj):
         """ Changes the screen to join screen.
@@ -334,8 +347,8 @@ class MainApp(MDApp):
             port: The port of the target.
         """
         if self.user != None:
-            ip = self.dialog.content_cls.children[1].text
-            port = self.dialog.content_cls.children[0].text
+            ip = self.client_dialog.content_cls.children[1].text
+            port = self.client_dialog.content_cls.children[0].text
             if ip == "" or port == "":
                 toast("Please fill all fields")
             else:
@@ -345,8 +358,8 @@ class MainApp(MDApp):
                         target=self.recetver.start_stream, args=("receive",)
                     )
                     client_thread.start()
-                    self.dialog.dismiss()
-                    self.dialog = None
+                    self.client_dialog.dismiss()
+                    self.client_dialog = None
                     toast("You have been connected to the server")
                 except:
                     toast("Could not connect to the server")
@@ -396,13 +409,12 @@ class MainApp(MDApp):
                     server_thread.start()
                     toast(f"Server start at {ip}:{port}")
                     self.dialog.dismiss()
-                    self.dialog = None
                     self.server_running = True
                     self.go_to_connected_clients()
                 except:
                     toast("Error! not able to start server")
         
-
+  
     def start_screen_share(self):
         """Starts the screen sharing.
         Parameters:
@@ -414,11 +426,12 @@ class MainApp(MDApp):
             try:
                 address = self.dialog.content_cls.children[1].text
                 port = self.dialog.content_cls.children[0].text
-                client = ScreenShareClient(str(address), int(port))
+                self.client = ScreenShareClient(str(address), int(port))
                 client_thread = threading.Thread(
-                    target=client.start_stream, args=("send",)
+                    target=self.client.start_stream, args=("send",)
                 )
                 client_thread.start()
+                self.is_sharing = True
                 toast(f"screen share Staring")
             except:
                 toast("Error! server not running")
@@ -427,6 +440,7 @@ class MainApp(MDApp):
     def stop_screen_sharing(self):
         """Stops the screen sharing."""
         self.client.stop_stream()
+        self.is_sharing = False
 
  
     def stop_server(self, instance):

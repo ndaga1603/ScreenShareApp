@@ -344,12 +344,12 @@
                 MDTopAppBar:
                     id: top_app_bar
                     icon: 'cast'
-                    icon_color: 0, 0, 1, .61
+                    icon_color: (0, 0, 1, .61) if app.is_sharing == False else (1, 0, 0, .61)
                     elevation: 0
                     type: 'bottom'
                     mode: 'center'
                     size_hint_y: .6
-                    on_action_button: app.start_screen_share()
+                    on_action_button: app.start_screen_share() if app.is_sharing == False else app.stop_screen_sharing()
         
 
 <FeedbackScreen@MDScreen>
@@ -365,12 +365,13 @@
         pos_hint: {"center_x": .5, "center_y": .5}
         
         MDIcon:
-            icon: "android"
+            icon: "emoticon-excited"
             pos_hint: {"center_x": .5, "center_y": .5}
 
         MDLabel:
             text: "We are constantly improving our product by lstening to your feedback."
             font_size: 13
+            halign: 'center'
             
         MDCard:
             orientation: 'vertical'
