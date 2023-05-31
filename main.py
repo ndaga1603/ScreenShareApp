@@ -184,6 +184,7 @@ class MainApp(MDApp):
         self.dialog = None
         self.client_dialog = None
         self.user = None
+        self.receiver = None
 
     def build(self):
         """Build the app"""
@@ -403,7 +404,7 @@ class MainApp(MDApp):
                 try:
                     self.receiver = ScreenShareClient(str(ip), int(port))
                     client_thread = threading.Thread(
-                        target=self.recetver.start_stream, args=("receive",)
+                        target=self.receiver.start_stream, args=("receive",)
                     )
                     client_thread.start()
                     self.client_dialog.dismiss()
@@ -502,7 +503,7 @@ class MainApp(MDApp):
         """Invites friends to the meeting."""
         if self.user != None and self.server_running:
             message = f"Hello, we are having a meeting on ScreenShare. Please join us. Here is the link to join the meeting, Address: {self.address} Port: {self.port}"
-            encoded_text = urllib.parse(message)
+            encoded_text = urllib.parse.quote(message)
             try:
                 subprocess.Popen(
                     ["cmd", "/C", f"start whatsapp://send?text={encoded_text}"],
