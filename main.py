@@ -1,5 +1,6 @@
 import os, sys
 from kivy.resources import resource_add_path, resource_find
+import re
 
 from kivymd.app import MDApp
 from kivy.core.window import Window
@@ -30,6 +31,9 @@ import socket
 import webbrowser
 import subprocess
 import urllib.parse
+from kivy.clock import Clock
+
+from kivy.uix.button import Button # For the drawer buttons
 
 
 # For Database Management
@@ -40,7 +44,34 @@ class ConnectedClientsScreen(Screen):
     def __init__(self, main_app, **kwargs):
         super(ConnectedClientsScreen, self).__init__(**kwargs)
         self.main_app = main_app
+        self.active_users = ["Instructor"]
+        self.client_data = []
+        Clock.schedule_interval(self.get_active_users, 1)
 
+    def get_active_users(self, dt):
+        """Gets the active users in the server."""
+        try:
+            users = self.main_app.server.get_active_users()
+            # print(users)
+            for user in users:
+                if user not in self.active_users:
+                    self.active_users.append(user)
+        except:
+            # toast("Server not running")
+            return None
+
+    def on_enter(self, *args):
+        Clock.schedule_interval(self.update_datatable, 15)
+
+    def on_leave(self, *args):
+        Clock.unschedule(self.update_datatable)
+
+    def update_datatable(self, *args):
+        new_data = self.fetch_data()
+        data = []
+        for row in new_data:
+            if row not in data:
+                data.append(row)
         anchor_layout = MDAnchorLayout(anchor_x="center", anchor_y="center")
         layout = MDBoxLayout(
             orientation="vertical",
@@ -67,67 +98,15 @@ class ConnectedClientsScreen(Screen):
             rows_num=10,
             column_data=[
                 ("S/N", dp(20)),
-                ("Name", dp(30)),
-                ("IP Address", dp(30)),
+                ("Name", dp(50)),
                 ("Status", dp(30)),
             ],
-            row_data=[
-                (
-                    "1",
-                    "Client 1",
-                    "192.168.0.1",
-                    (
-                        "checkbox-marked-circle",
-                        [39 / 256, 174 / 256, 96 / 256, 1],
-                        "Online",
-                    ),
-                ),
-                (
-                    "2",
-                    "Client 1",
-                    "192.168.0.1",
-                    (
-                        "checkbox-marked-circle",
-                        [39 / 256, 174 / 256, 96 / 256, 1],
-                        "Online",
-                    ),
-                ),
-                (
-                    "3",
-                    "Client 1",
-                    "192.168.0.1",
-                    (
-                        "checkbox-marked-circle",
-                        [39 / 256, 174 / 256, 96 / 256, 1],
-                        "Online",
-                    ),
-                ),
-                (
-                    "4",
-                    "Client 1",
-                    "192.168.0.1",
-                    (
-                        "checkbox-marked-circle",
-                        [39 / 256, 174 / 256, 96 / 256, 1],
-                        "Online",
-                    ),
-                ),
-                (
-                    "5",
-                    "Client 1",
-                    "192.168.0.1",
-                    (
-                        "checkbox-marked-circle",
-                        [39 / 256, 174 / 256, 96 / 256, 1],
-                        "Online",
-                    ),
-                ),
-            ],
+            row_data=data,
         )
         stop_button = MDFloatingActionButton(
             icon="stop",
             pos_hint={"center_x": 0.5},
-            md_bg_color=[205 / 256, 24 / 256, 24 / 256, 1],  # Red
+            md_bg_color=[205 / 256, 24 / 256, 24 / 256, 1],
             on_release=self.main_app.stop_server,
         )
 
@@ -148,6 +127,23 @@ class ConnectedClientsScreen(Screen):
 
         self.add_widget(float_layout)
 
+    def fetch_data(self):
+        # print(self.active_users)
+        for index, user in enumerate(self.active_users):
+            row = (
+                str(index + 1),
+                user,
+                (
+                    "checkbox-marked-circle",
+                    [39 / 256, 174 / 256, 96 / 256, 1],
+                    "Online",
+                ),
+            )
+        # if row not in self.client_data:
+        self.client_data.append(row)
+        # print(self.client_data)
+        return self.client_data
+
 
 class ContentNavigationDrawer(MDScrollView):
     screen_manager = ObjectProperty()
@@ -157,6 +153,14 @@ class ContentNavigationDrawer(MDScrollView):
 class ClickableTextFieldRound(MDRelativeLayout):
     text = StringProperty()
     hint_text = StringProperty()
+
+
+class ClickableTextFieldPassword(MDRelativeLayout):
+    text = StringProperty()
+    hint_text = StringProperty()
+
+    def get_password(self):
+        return self.ids.password.text
 
 
 class LoginScreen(Screen):
@@ -169,7 +173,6 @@ class RegisterScreen(Screen):
 
 class MainScreen(Screen):
     pass
-
 
 class MainApp(MDApp):
     def __init__(self, **kwargs):
@@ -184,6 +187,7 @@ class MainApp(MDApp):
         self.dialog = None
         self.client_dialog = None
         self.user = None
+        self.user_type = None
         self.receiver = None
 
     def build(self):
@@ -298,6 +302,9 @@ class MainApp(MDApp):
         """
         username = self.root.get_screen("login_screen").ids.username.text
         password = self.root.get_screen("login_screen").ids.password.text
+        # password_widget = ClickableTextFieldPassword()
+        # password = password_widget.get_password()
+        # print(password)
 
         if username == "" or password == "":
             toast("Please fill all fields")
@@ -305,11 +312,13 @@ class MainApp(MDApp):
             dbManager = DBManager(password, username, user_type="")
             ouput = dbManager.login()
 
-            if ouput:
-                self.user = username
+            if ouput[0]:
+                self.user = password
+                self.user_type = ouput[1]
+                # print(self.user_type)
                 toast("You have been logged in")
                 self.root.current = "main"
-                print(self.user)
+                # print(self.user)
 
             else:
                 toast("Invalid credentials")
@@ -326,41 +335,46 @@ class MainApp(MDApp):
             Type of the user
         """
         user_type = ""
+        password_pattern = r"^NIT/[A-Z]{3}/\d{4}/[A-Za-z0-9]+$"
         username = self.root.get_screen("register_screen").ids.username.text
         password = self.root.get_screen("register_screen").ids.password1.text
         confirm_password = self.root.get_screen("register_screen").ids.password2.text
         student_type = self.root.get_screen("register_screen").ids.user_type.active
-        if student_type:
-            user_type = "Student"
-        else:
-            user_type = "Teacher"
+        if re.match(password_pattern, password):
+            if student_type:
+                user_type = "Student"
+            else:
+                user_type = "Teacher"
 
-        if username == "" or password == "" or confirm_password == "":
-            toast("Please fill all fields")
-        else:
-            if password == confirm_password:
-                dbManager = DBManager(password, username, user_type)
-                input = dbManager.register()
+            if username == "" or password == "" or confirm_password == "":
+                toast("Please fill all fields")
+            else:
+                if password == confirm_password:
+                    dbManager = DBManager(password, username, user_type)
+                    input = dbManager.register()
 
-                if input:
-                    self.root.get_screen("register_screen").ids.username.text = ""
-                    self.root.get_screen("register_screen").ids.password1.text = ""
-                    self.root.get_screen("register_screen").ids.password2.text = ""
+                    if input:
+                        self.root.get_screen("register_screen").ids.username.text = ""
+                        self.root.get_screen("register_screen").ids.password1.text = ""
+                        self.root.get_screen("register_screen").ids.password2.text = ""
 
-                    toast("You have been registered")
-                    self.root.current = "login_screen"
+                        toast("You have been registered")
+                        self.root.current = "login_screen"
+
+                    else:
+                        toast("User already exists")
 
                 else:
-                    toast("User already exists")
-
-            else:
-                toast("Passwords do not match")
+                    toast("Passwords do not match")
+        else:
+            toast("Password should be of the form NIT/BIT/2020/qw00")
 
     def logout(self):
         """Logs out the user and changes the screen to login screen."""
 
         self.root.current = "login_screen"
         self.user = None
+        self.user_type = None
         if self.server_running or self.is_sharing:
             self.stop_server(instance=None)
             self.stop_screen_sharing()
@@ -404,7 +418,11 @@ class MainApp(MDApp):
                 try:
                     self.receiver = ScreenShareClient(str(ip), int(port))
                     client_thread = threading.Thread(
-                        target=self.receiver.start_stream, args=("receive",)
+                        target=self.receiver.start_stream,
+                        args=(
+                            "receive",
+                            self.user,
+                        ),
                     )
                     client_thread.start()
                     self.client_dialog.dismiss()
@@ -475,7 +493,11 @@ class MainApp(MDApp):
                 port = self.dialog.content_cls.children[0].text
                 self.client = ScreenShareClient(str(address), int(port))
                 client_thread = threading.Thread(
-                    target=self.client.start_stream, args=("send",)
+                    target=self.client.start_stream,
+                    args=(
+                        "send",
+                        self.user,
+                    ),
                 )
                 client_thread.start()
                 self.is_sharing = True
@@ -515,6 +537,7 @@ class MainApp(MDApp):
 
 
 if __name__ == "__main__":
+    # MainApp().run()
     try:
         if hasattr(sys, "_MEIPASS"):
             resource_add_path(os.path.join(sys._MEIPASS))

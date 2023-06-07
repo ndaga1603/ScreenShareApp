@@ -5,6 +5,26 @@
     size_hint: None, None
     size: dp(48), dp(48)
 
+<ClickableTextFieldPassword>:
+    size_hint_y: None
+    height: text_field.height
+
+    MDTextField:
+        id: text_field
+        mode: "rectangle"
+        hint_text: root.hint_text
+        text: root.text
+        password: True
+    
+    MDIconButton:
+        icon: "eye-off"
+        pos_hint: {"center_y": .5}
+        pos: text_field.width - self.width + dp(8), 0
+        theme_text_color: "Hint"
+        on_release:
+            self.icon = "eye" if self.icon == "eye-off" else "eye-off"
+            text_field.password = False if text_field.password is True else True
+
 <LoginScreen>:
     MDScreen:
         MDCard:
@@ -15,7 +35,7 @@
             elevation: 8
             padding: [30, 0, 30, 30]
             spacing: 30
-            padding_y: 15
+          
 
             MDLabel:
                 text: "LOGIN"
@@ -35,12 +55,10 @@
                 font_size: 20
                 pos_hint: {"center_x": .5}
 
-
             MDTextField:
                 id: password
                 mode: "rectangle"
                 hint_text: "Password"
-                password: True
                 icon_right: "eye-off"
                 size_hint_x: None
                 width: 250
@@ -93,7 +111,8 @@
                 id: password1
                 mode: "rectangle"
                 hint_text: "Password"
-                password: True
+                helper_text: "Must be Reg no: eg, NIT/BIT/2017/001"
+                # password: True
                 icon_right: "eye-off"
                 size_hint_x: None
                 width: 250
@@ -104,7 +123,7 @@
                 id: password2
                 mode: "rectangle"
                 hint_text: "Confirm Password"
-                password: True
+                # password: True
                 size_hint_x: None
                 width: 250
                 font_size: 20
@@ -120,11 +139,11 @@
                 UserType:
                     id: user_type
                     active: True
-                    value: "teacher"
+                    value: "instructor"
                     font_size: 16
 
                 MDLabel:
-                    text: "Teacher"
+                    text: "Instructor"
                     size_hint_x: None
                     width: 80
                     font_size: 16
@@ -133,11 +152,11 @@
                     
                 UserType:
                     id: user_type
-                    value: "student"
+                    value: "receiver"
                     font_size: 16
 
                 MDLabel:
-                    text: "Student"
+                    text: "Receiver"
                     size_hint_x: None
                     width: 80
                     font_size: 16
@@ -208,10 +227,7 @@
             icon: "home-outline"
             text_right_color: "#4a4939"
             text: "Home"
-            on_press:
-                root.nav_drawer.set_state("close")
-                root.screen_manager.current = "home"
-
+            on_press: root.nav_drawer.set_state("close"); root.screen_manager.current = "home" 
         MDNavigationDrawerDivider:
 
         MDNavigationDrawerLabel:
@@ -256,7 +272,6 @@
 
 
 <HomeScreen@MDScreen>
-    # home screen
     name: "home"
    
     MDBoxLayout:
@@ -291,7 +306,9 @@
                 height: dp(24)
                 font_style: 'Caption'
 
+                
             MDFillRoundFlatButton:
+                id: join_button
                 text: "Join Now"
                 padding: "10dp"
                 text_color: "white"
@@ -299,6 +316,7 @@
                 md_bg_color: 0,0,1,.61
                 pos_hint: {"center_x": .5, "center_y": .5}
                 on_release: app.join_dialog()
+
 
             MDFillRoundFlatButton:
                 text: "Start Server"
@@ -309,12 +327,13 @@
                 on_release:  app.server_dialog()
 
             MDFillRoundFlatButton:
-                text: "Invite Friends"
+                text: "Invite"
                 padding: "10dp"
                 text_color: "white"
                 size_hint_x: .7
                 pos_hint: {"center_x": .5, "center_y": .5}
                 on_release: app.invite_friends()
+                
 
             MDBottomAppBar:
                 MDTopAppBar:
@@ -329,9 +348,7 @@
         
 
 <FeedbackScreen@MDScreen>
-    # feedback screen
     name: "feedback"
-    
 
     MDBoxLayout:
         orientation: 'vertical'
@@ -382,20 +399,9 @@
                 icon_color: 0, 1, 0, .7
                 pos_hint: {"center_x": .8, "center_y": .5}
                 on_release: app.show_toast()
-                
-
-    # MDBottomAppBar:
-    #     MDTopAppBar:
-    #         icon: 'home'
-    #         icon_color: 0, 0, 1, .61
-    #         mode: 'center'
-    #         type: 'bottom'
-    #         on_action_button: app.back_home(instance=None)
-    #         left_action_items: [[''], ['arrow-left']]
             
 
 <HelpScreen@MDScreen>
-    # help screen  
     name: "help"
 
     MDBoxLayout:
@@ -419,18 +425,7 @@
                 TwoLineListItem:
                     text: "How to join the shares screen?"
                     secondary_text: "Enter the server IP address and Port, then click connect button"
-                
-
-    # MDBottomAppBar:
-    #     MDTopAppBar:
-    #         icon: 'home'
-    #         icon_color: 0, 0, 1, .61
-    #         type: 'bottom'
-    #         mode: 'center'
-    #         size_hint_y: .6
-    #         on_action_button: app.back_home(instance=None)
-    #         left_action_items: [[''], ['arrow-left']]
-          
+                  
 
 <MainScreen@MDScreen>:
     name: "main"

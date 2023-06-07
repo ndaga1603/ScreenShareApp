@@ -3,6 +3,8 @@ import hmac
 import sqlite3
 import json
 
+
+
 class DatabaseManager():
     def __init__(self, password, username, user_type):
         self.password = password
@@ -11,6 +13,8 @@ class DatabaseManager():
         self.key = '_retdyu_@#1hd99'
 
     def __encript_password(self):
+        
+
         encripted_password = hmac.new(key=self.key.encode(), msg=self.password.encode(),digestmod="sha256")
         return encripted_password.hexdigest()
 
@@ -46,6 +50,6 @@ class DatabaseManager():
         cursor.execute("SELECT * FROM users WHERE username=?", (self.username,))
         user = cursor.fetchone()
         if user is not None and user[1] == encripted_password:
-            return True
+            return True, user[2]
         return False
  
