@@ -38,6 +38,7 @@ from kivy.uix.button import Button # For the drawer buttons
 
 # For Database Management
 from db import DatabaseManager as DBManager
+from pdf import CreatePDF
 
 
 class ConnectedClientsScreen(Screen):
@@ -61,7 +62,7 @@ class ConnectedClientsScreen(Screen):
             return None
 
     def on_enter(self, *args):
-        Clock.schedule_interval(self.update_datatable, 15)
+        Clock.schedule_interval(self.update_datatable, 5)
 
     def on_leave(self, *args):
         Clock.unschedule(self.update_datatable)
@@ -103,6 +104,7 @@ class ConnectedClientsScreen(Screen):
             ],
             row_data=data,
         )
+        
         stop_button = MDFloatingActionButton(
             icon="stop",
             pos_hint={"center_x": 0.5},
@@ -116,6 +118,7 @@ class ConnectedClientsScreen(Screen):
             on_release=self.main_app.back_home,
         )
 
+        self.data_table.bind(on_check_press=self.on_check_press)
         layout.add_widget(label)
         layout.add_widget(self.data_table)
         anchor_layout.add_widget(layout)
@@ -126,6 +129,16 @@ class ConnectedClientsScreen(Screen):
         float_layout.add_widget(back_button)
 
         self.add_widget(float_layout)
+
+    def on_check_press(self, instance_table, current_row):
+        '''Called when the check box in the table row is checked.'''
+
+        names = [data[1] for data in instance_table.row_data]
+        if len(names) > 1:
+            names.pop(0)
+
+            pdf = CreatePDF(filename="joined_students.pdf", names=names)
+            pdf.create_pdf()  
 
     def fetch_data(self):
         # print(self.active_users)
@@ -166,10 +179,8 @@ class ClickableTextFieldPassword(MDRelativeLayout):
 class LoginScreen(Screen):
     pass
 
-
 class RegisterScreen(Screen):
     pass
-
 
 class MainScreen(Screen):
     pass
@@ -194,7 +205,7 @@ class MainApp(MDApp):
         """Build the app"""
 
         self.title = ""
-        Window.size = [640, 630]
+        Window.size = [585, 610]
         self.theme_cls.theme_style = "Dark"
         self.theme_cls.primary_palette = "DeepPurple"
 
@@ -221,12 +232,10 @@ class MainApp(MDApp):
                     MDTextField(
                         hint_text="Ip address of the server",
                         line_color_focus="orange",
-                        # hint_text_color_normal = "orange"
                     ),
                     MDTextField(
                         hint_text="Port of the server",
                         line_color_focus="orange",
-                        # hint_text_color_normal = "orange"
                     ),
                     orientation="vertical",
                     spacing="10dp",
@@ -302,10 +311,7 @@ class MainApp(MDApp):
         """
         username = self.root.get_screen("login_screen").ids.username.text
         password = self.root.get_screen("login_screen").ids.password.text
-        # password_widget = ClickableTextFieldPassword()
-        # password = password_widget.get_password()
-        # print(password)
-
+       
         if username == "" or password == "":
             toast("Please fill all fields")
         else:
@@ -319,7 +325,7 @@ class MainApp(MDApp):
                 toast("You have been logged in")
                 self.root.current = "main"
                 # print(self.user)
-
+               
             else:
                 toast("Invalid credentials")
 
@@ -537,7 +543,7 @@ class MainApp(MDApp):
 
 
 if __name__ == "__main__":
-    # MainApp().run()
+    MainApp().run()
     try:
         if hasattr(sys, "_MEIPASS"):
             resource_add_path(os.path.join(sys._MEIPASS))
