@@ -1,4 +1,3 @@
-# server
 import hmac
 import sqlite3
 import json
@@ -44,7 +43,7 @@ class DatabaseManager:
                 "SELECT COUNT(*) FROM users WHERE password = ?", (encripted_password,)
             )
             result = cursor.fetchone()
-            if result[1] > 0:
+            if result[0] > 0:
                 # Username already exists, return False to indicate registration failure
                 connection.close()
                 return False
@@ -69,8 +68,8 @@ class DatabaseManager:
         encripted_password = self.__encript_password()
         connection = sqlite3.connect("users.db")
         cursor = connection.cursor()
-        cursor.execute("SELECT * FROM users WHERE username=?", (self.username,))
+        cursor.execute("SELECT * FROM users WHERE password=?", (encripted_password,))
         user = cursor.fetchone()
-        if user is not None and user[1] == encripted_password:
+        if user is not None and user[0] == self.username:
             return True, user[2]
         return False, None
